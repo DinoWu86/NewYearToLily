@@ -1,0 +1,554 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <title>給妳的一封信</title>
+  <style>
+    :root{
+      --bg:#fff; --fg:#111; --muted:#666; --card:#f6f6f6; --maxw:720px;
+      --btn:#111; --btnfg:#fff;
+    }
+    @media (prefers-color-scheme: dark){
+      :root{ --bg:#0b0b0c; --fg:#f2f2f2; --muted:#a9a9a9; --card:#141416; --btn:#f2f2f2; --btnfg:#0b0b0c; }
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0; background:var(--bg); color:var(--fg);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+      line-height:1.85; letter-spacing:0.2px;
+    }
+    .wrap{ max-width:var(--maxw); margin:0 auto; padding:24px 18px 64px; }
+
+    /* 信紙卡片（紙張感） */
+    .card{
+      position: relative;
+      border-radius: 16px;
+      padding: 18px 16px;
+      background:
+        radial-gradient(1200px 500px at 20% 0%, rgba(0,0,0,.04), transparent 60%),
+        radial-gradient(1200px 500px at 80% 100%, rgba(0,0,0,.03), transparent 60%),
+        linear-gradient(0deg, rgba(0,0,0,.03), rgba(0,0,0,.03)),
+        repeating-linear-gradient(
+          0deg,
+          rgba(0,0,0,.018) 0px,
+          rgba(0,0,0,.018) 1px,
+          transparent 1px,
+          transparent 6px
+        );
+      box-shadow: 0 10px 30px rgba(0,0,0,.10);
+      border: 1px solid rgba(127,127,127,.18);
+    }
+
+    header{ margin: 8px 0 18px; }
+    .title{ font-size: clamp(22px, 5vw, 30px); font-weight:750; margin:0 0 6px; }
+    .meta{ color:var(--muted); font-size:14px; display:flex; gap:10px; flex-wrap:wrap; }
+
+    .btn{
+      appearance:none; border:0; border-radius:999px;
+      padding:12px 16px; font-weight:750; cursor:pointer;
+      background:var(--btn); color:var(--btnfg);
+    }
+    .btn:active{ transform: translateY(1px); }
+    .center{ text-align:center; }
+    .sp{ height:14px; }
+
+    .salute{ font-size:18px; margin:0 0 10px; font-weight:650; }
+
+    /* 段落樣式（段落空白 + 首行縮排） */
+    .letter{
+      font-size: 18px;
+      margin: 0;
+      word-break: break-word;
+    }
+    .letter p{
+      margin: 0 0 14px;
+      text-indent: 2em;
+    }
+    .letter p:last-child{ margin-bottom: 0; }
+
+    .sig{
+      margin-top:18px;
+      display:flex;
+      justify-content:flex-end;
+      font-size:17px;
+      font-weight:650;
+    }
+    .hint{ margin-top:14px; color:var(--muted); font-size:13px; text-align:center; }
+
+    /* 右下角小彩蛋按鈕 */
+    .egg{
+      position: fixed; right: 16px; bottom: 16px;
+      width: 44px; height: 44px; border-radius: 999px;
+      border: 0; cursor: pointer;
+      background: var(--card); color: var(--fg);
+      font-size: 20px; font-weight: 800;
+      box-shadow: 0 6px 20px rgba(0,0,0,.12);
+    }
+    .toast{
+      position: fixed; left: 50%; bottom: 76px; transform: translateX(-50%);
+      max-width: min(var(--maxw), calc(100vw - 32px));
+      background: var(--card); color: var(--fg);
+      padding: 12px 14px; border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.18);
+      font-size: 16px;
+      opacity:0; pointer-events:none;
+      transition: opacity .2s ease;
+      white-space: pre-wrap;
+    }
+    .toast.show{ opacity:1; }
+
+    /* 音樂控制 */
+    .audioBar{
+      display:flex; gap:10px; align-items:center; justify-content:center;
+      margin-top: 10px;
+    }
+    .small{ font-size:13px; color: var(--muted); }
+
+    /* 隱藏 */
+    .hidden{ display:none !important; }
+
+    /* ====== 信件卡片加：半透明背景照片 ====== */
+    #letterCard{
+      position: relative;
+      overflow: hidden; /* 讓背景不超出圓角 */
+    }
+    #letterCard::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background-image: url("photo.jpg");
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      opacity: 0.18;          /* ✅ 透明度：0~1，越小越淡 */
+      filter: blur(1px);      /* 可選：讓背景柔一點 */
+      transform: scale(1.06); /* 防 blur 邊緣露出 */
+      z-index: 0;
+    }
+    #letterCard > *{
+      position: relative;
+      z-index: 1; /* 內容在背景上面 */
+    }
+
+        /* ===== 信封圖示按鈕 ===== */
+    .envelopeBtn{
+      width: 100%;
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      padding: 6px 0 2px;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .envelopeHint{
+      margin-top: 10px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .envelope{
+      width: min(220px, 70vw);
+      height: auto;
+      filter: drop-shadow(0 14px 22px rgba(0,0,0,.16));
+      transform: translateY(0) scale(1);
+      transition: transform .18s ease;
+    }
+
+/* ===== 信封圖示按鈕（進階動畫版） ===== */
+.envelopeBtn{
+  width: 100%;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  padding: 6px 0 2px;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.envelopeHint{
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* 信封浮動 + 光暈 */
+.envelopeWrap{
+  position: relative;
+  display: grid;
+  place-items: center;
+  padding: 8px 0 0;
+}
+
+.envelopeGlow{
+  position: absolute;
+  width: min(260px, 86vw);
+  height: 90px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 50% 50%,
+    rgba(255, 106, 162, .24),
+    rgba(255, 179, 107, .10),
+    transparent 70%);
+  filter: blur(10px);
+  opacity: .9;
+  transform: translateY(52px);
+  animation: glowPulse 2.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes glowPulse{
+  0%,100%{ opacity:.75; transform: translateY(52px) scale(1); }
+  50%{ opacity:1; transform: translateY(52px) scale(1.05); }
+}
+
+.envelope{
+  width: min(250px, 82vw);
+  height: auto;
+  filter:
+    drop-shadow(0 18px 30px rgba(0,0,0,.18))
+    drop-shadow(0 6px 10px rgba(0,0,0,.10));
+  transform: translateY(0) scale(1);
+  transition: transform .22s ease, filter .22s ease;
+  animation: floaty 2.6s ease-in-out infinite;
+  transform-origin: 50% 70%;
+}
+
+@keyframes floaty{
+  0%,100%{ transform: translateY(0) rotate(-.4deg); }
+  50%{ transform: translateY(-6px) rotate(.4deg); }
+}
+
+.envelopeBtn:hover .envelope{
+  transform: translateY(-1px) scale(1.01);
+}
+.envelopeBtn:active .envelope{
+  animation: none;
+  transform: translateY(2px) scale(0.98);
+  filter:
+    drop-shadow(0 10px 18px rgba(0,0,0,.18))
+    drop-shadow(0 4px 8px rgba(0,0,0,.10));
+}
+
+/* 背景微閃（打開那瞬間） */
+#coverCard{
+  position: relative;
+  overflow: hidden;
+}
+#coverCard::after{
+  content:"";
+  position:absolute;
+  inset:-40px;
+  background: radial-gradient(circle at 50% 40%,
+    rgba(255, 106, 162, .18),
+    rgba(255, 179, 107, .10),
+    transparent 65%);
+  opacity: 0;
+  transform: scale(0.96);
+  transition: opacity .35s ease, transform .35s ease;
+  pointer-events: none;
+}
+#coverCard.opened::after{
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ===== 配色（鮮艷漸層） ===== */
+.env-body{
+  fill: url(#envBodyGrad);
+  stroke: rgba(255, 120, 150, .55);
+  stroke-width: 2;
+}
+.env-letter{
+  fill: #fff8f2;
+  stroke: rgba(255, 170, 120, .35);
+  stroke-width: 2;
+}
+.env-line{
+  stroke: rgba(255, 145, 170, .55);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+.env-fold{
+  fill: none;
+  stroke: rgba(255, 170, 120, .45);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.env-flap{
+  fill: url(#envFlapGrad);
+  stroke: rgba(255, 120, 150, .55);
+  stroke-width: 2;
+  transform-origin: 100px 52px;
+  transition: transform .42s cubic-bezier(.2,.9,.2,1);
+}
+
+/* 信紙上滑（新增 env-paper 物件） */
+.env-paper{
+  transform-origin: 100px 90px;
+  transform: translateY(0);
+  transition: transform .42s cubic-bezier(.2,.9,.2,1);
+}
+
+/* 愛心跳動 + 發光 */
+.env-heart{
+  fill: rgba(255, 60, 110, 0);
+  opacity: 0;
+  transform: translateY(0) scale(1);
+  transform-origin: 100px 80px;
+  transition: transform .42s cubic-bezier(.2,.9,.2,1), fill .42s ease, opacity .42s ease, filter .42s ease;
+  filter: drop-shadow(0 0 0 rgba(255,60,110,0));
+}
+
+/* 打開動畫觸發 */
+#coverCard.opened .env-flap{
+  transform: rotateX(170deg);
+}
+#coverCard.opened .env-paper{
+  transform: translateY(-12px);
+}
+#coverCard.opened .env-heart{
+  fill: rgba(255, 60, 110, .95);
+  opacity: 1;
+  transform: translateY(-14px) scale(1.05);
+  filter: drop-shadow(0 8px 14px rgba(255, 60, 110, .35));
+  animation: heartPop .6s ease-out 1;
+}
+@keyframes heartPop{
+  0%{ transform: translateY(-10px) scale(.95); }
+  60%{ transform: translateY(-18px) scale(1.12); }
+  100%{ transform: translateY(-14px) scale(1.05); }
+}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <h1 class="title">給妳的一封信</h1>
+      <div class="meta">
+        <span id="date"></span>
+        <span>—</span>
+        <span id="toWhom">寫給：琬庭</span>
+      </div>
+    </header>
+
+    <!-- 密碼解鎖區（簡易保護） -->
+    <section class="card" id="lockCard">
+      <div class="center">
+        <div style="font-size:18px; font-weight:750;">只給妳看的</div>
+        <div class="sp"></div>
+        <div class="small">請輸入我們的密碼</div>
+        <div class="sp"></div>
+        <input id="pw" type="password" inputmode="text" autocomplete="off"
+               placeholder="輸入密碼"
+               style="width:min(360px, 100%); padding:12px 14px; border-radius:12px; border:1px solid rgba(127,127,127,.35); background:transparent; color:var(--fg); font-size:16px;">
+        <div class="sp"></div>
+        <button class="btn" id="unlockBtn">解鎖</button>
+        <div class="sp"></div>
+        <div id="lockMsg" class="small"></div>
+      </div>
+    </section>
+
+    <!-- 開場「拆信封」 -->
+    <section class="card hidden" id="coverCard">
+      <div class="center">
+        <div style="font-size:18px; font-weight:750;">我把想說的話都寫在這裡了。</div>
+        <div class="sp"></div>
+        <button class="envelopeBtn" id="openBtn" aria-label="打開信封" title="打開信封">
+          <div class="envelopeWrap">
+            <div class="envelopeGlow"></div>
+        
+            <svg class="envelope" viewBox="0 0 200 140" role="img" aria-hidden="true">
+              <defs>
+                <linearGradient id="envBodyGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#ffb3c7"/>
+                  <stop offset="55%" stop-color="#ffd2a8"/>
+                  <stop offset="100%" stop-color="#ffe9c8"/>
+                </linearGradient>
+                <linearGradient id="envFlapGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#ff6aa2"/>
+                  <stop offset="100%" stop-color="#ffb36b"/>
+                </linearGradient>
+              </defs>
+        
+              <!-- 信紙（會上滑） -->
+              <g class="env-paper">
+                <rect class="env-letter" x="36" y="20" width="128" height="86" rx="10"></rect>
+                <line class="env-line" x1="52" y1="44" x2="148" y2="44"></line>
+                <line class="env-line" x1="52" y1="58" x2="140" y2="58"></line>
+                <line class="env-line" x1="52" y1="72" x2="132" y2="72"></line>
+              </g>
+        
+              <!-- 信封本體 -->
+              <rect class="env-body" x="18" y="36" width="164" height="92" rx="14"></rect>
+        
+              <!-- 信封折線 -->
+              <path class="env-fold" d="M26 52 L100 96 L174 52"></path>
+        
+              <!-- 信封蓋（會翻開） -->
+              <path class="env-flap" d="M26 52 L100 18 L174 52 L100 90 Z"></path>
+        
+              <!-- 小愛心 -->
+              <path class="env-heart" d="M100 58
+                C100 52 94 48 88 48
+                C80 48 76 54 76 60
+                C76 76 96 86 100 92
+                C104 86 124 76 124 60
+                C124 54 120 48 112 48
+                C106 48 100 52 100 58 Z"></path>
+            </svg>
+          </div>
+        
+          <div class="envelopeHint">點信封打開</div>
+        </button>
+
+        <div class="audioBar">
+          <button class="btn" id="musicBtn" style="padding:10px 14px;">播放音樂</button>
+          <span class="small" id="musicState">（可選）</span>
+        </div>
+        <div class="small">手機不會自動播放，需手動按一次播放。</div>
+      </div>
+    </section>
+
+    <!-- 信件內容 -->
+    <section class="card hidden" id="letterCard" aria-label="信件內容">
+      <p class="salute" id="salute">Hi 戴小乓：</p>
+
+      <div class="letter" id="content">
+        <p>這是我們在一起的第二個過年。從學生時代走入每天都要被社會關進時間牢籠的日子，真的是很不可思議的感受。跟你在一起的每天都很開心，每一次想起來還是會覺得很不可思議，在這個階段是你陪在我的身邊。</p>
+
+        <p>我很自私的覺得，好像慢慢可以看見我們一起生活的未來了，每次看著那裡的畫面，心裡都覺得甜甜的。</p>
+
+        <p>入職 FIH 這十個月以來，雖常有抱怨，但整體來說還是 Z &gt; B，是很棒的歷練！</p>
+
+        <p>回想我們剛開始交往，從論文八字還沒有一撇、焦慮的找工作、被塞了這樣莫名其妙的工作內容、學習、上手、負責這項工作、獲得老闆的賞識也拿到了獎金。這過程中若沒有你陪著，事情是不可能這麼順利的。</p>
+
+        <p>這包紅包，是去年的我心裡就早就決定好，應該要給妳的。很謝謝你陪著我寫論文、教我好多東西、去年的 2/11 陪著我過、扮演每一個我重要大事的商量對象。</p>
+
+        <p>你真的是我生命中很重要的存在，我也會努力讓你也有相同感受的！</p>
+
+        <p>祝福我們都能快脫離現在的有毒環境，成為自己想要成為的樣子！</p>
+
+        <p>新年快樂 熊熊愛你噢</p>
+      </div>
+
+      <div class="sig" id="sign">愛你的熊熊</div>
+    </section>
+
+    <div class="hint">提示：在 Zenfone 10 上可以用雙指縮放或調整瀏覽器字級。</div>
+  </main>
+
+  <!-- 小彩蛋 -->
+  <button class="egg hidden" id="eggBtn" aria-label="小彩蛋">☆</button>
+  <div class="toast" id="toast"></div>
+
+  <!-- 音樂（之後把 src 換成你的檔案） -->
+  <audio id="bgm" preload="none">
+    <!-- 例：<source src="music.mp3" type="audio/mpeg"> -->
+  </audio>
+
+  <script>
+    // ===== 你可以改的設定 =====
+    const SETTINGS = {
+      PASSWORD: "0806",
+      TO_NAME: "戴小乓",
+      SALUTE: "Hi 戴小乓：",
+      SIGN: "愛你的熊熊",
+      EGG_QUOTES: [
+        "熊熊愛你噢。",
+        "謝謝妳一直在我身邊。",
+        "新年快樂，我們一起更好。"
+      ],
+      ENABLE_EGG: true,
+      ENABLE_MUSIC: true,
+    };
+
+    // ===== 初始化日期 =====
+    const d = new Date();
+    const fmt = new Intl.DateTimeFormat('zh-TW', { year:'numeric', month:'long', day:'numeric' });
+    document.getElementById('date').textContent = fmt.format(d);
+
+    // ===== 套用文字 =====
+    document.getElementById('toWhom').textContent = `寫給：${SETTINGS.TO_NAME}`;
+    document.getElementById('salute').textContent = SETTINGS.SALUTE;
+    document.getElementById('sign').textContent = SETTINGS.SIGN;
+
+    // ===== 解鎖 =====
+    const lockCard = document.getElementById('lockCard');
+    const coverCard = document.getElementById('coverCard');
+    const letterCard = document.getElementById('letterCard');
+    const lockMsg = document.getElementById('lockMsg');
+
+    document.getElementById('unlockBtn').addEventListener('click', () => {
+      const val = document.getElementById('pw').value;
+      if(val === SETTINGS.PASSWORD){
+        lockCard.classList.add('hidden');
+        coverCard.classList.remove('hidden');
+      }else{
+        lockMsg.textContent = "密碼不對喔（再試一次）";
+      }
+    });
+
+    // Enter 也可解鎖
+    document.getElementById('pw').addEventListener('keydown', (e)=>{
+      if(e.key === 'Enter') document.getElementById('unlockBtn').click();
+    });
+
+    // ===== 打開信封 =====
+    document.getElementById('openBtn').addEventListener('click', () => {
+    coverCard.classList.add('opened'); // 先播放信封打開動畫
+
+    setTimeout(() => {
+      coverCard.classList.add('hidden');
+      letterCard.classList.remove('hidden');
+      if(SETTINGS.ENABLE_EGG) document.getElementById('eggBtn').classList.remove('hidden');
+      }, 280);
+    });
+
+    // ===== 小彩蛋 =====
+    const eggBtn = document.getElementById('eggBtn');
+    const toast = document.getElementById('toast');
+    function showToast(msg){
+      toast.textContent = msg;
+      toast.classList.add('show');
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(()=>toast.classList.remove('show'), 1800);
+    }
+    eggBtn.addEventListener('click', ()=>{
+      const q = SETTINGS.EGG_QUOTES[Math.floor(Math.random()*SETTINGS.EGG_QUOTES.length)];
+      showToast(q);
+    });
+    if(!SETTINGS.ENABLE_EGG) eggBtn.classList.add('hidden');
+
+    // ===== 背景音樂 =====
+    const bgm = document.getElementById('bgm');
+    const musicBtn = document.getElementById('musicBtn');
+    const musicState = document.getElementById('musicState');
+    if(!SETTINGS.ENABLE_MUSIC){
+      musicBtn.classList.add('hidden');
+      musicState.textContent = "";
+    }else{
+      musicBtn.addEventListener('click', async ()=>{
+        try{
+          if(bgm.paused){
+            await bgm.play();
+            musicBtn.textContent = "暫停音樂";
+            musicState.textContent = "播放中";
+          }else{
+            bgm.pause();
+            musicBtn.textContent = "播放音樂";
+            musicState.textContent = "已暫停";
+          }
+        }catch(err){
+          musicState.textContent = "（尚未放入音樂檔或瀏覽器限制）";
+        }
+      });
+    }
+  </script>
+</body>
+</html>
