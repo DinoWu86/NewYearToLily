@@ -2,118 +2,278 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!--
+    可替換資源說明：
+    1) 背景照片：把同資料夾的 photo.jpg 換成你的照片（建議 1200px 以上、偏柔和/不高對比）。
+       - 若照片較亮或對比太強，請把 CSS 裡 #letterCard::before 的 opacity 調低（例如 0.10~0.16）。
+    2) 背景音樂：把同資料夾的 music.mp3 放入，或改成你自己的檔名與格式（mp3/ogg）。
+    3) 字體：本檔使用系統字體（不依賴外部）。若想用 webfont，請自行以 <link> 或 @font-face 引入（會增加外部依賴）。
+    
+    安全提醒（重要）：密碼保護是「前端可見」的簡易儀式門檻，任何人查看原始碼即可看到 PASSWORD；
+    若要真正的隱私/權限控管，需改成伺服器端驗證或受保護的資源存取。
+  -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="color-scheme" content="light dark" />
-  <title>給妳的一封信</title>
+  <!-- theme-color：影響部分行動瀏覽器位址列/外框色（不同瀏覽器支援程度不一） -->
+  <meta name="theme-color" content="#ff2f77" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#0b0b0c" media="(prefers-color-scheme: dark)" />
+  <title>To 戴小乓：</title>
+
   <style>
     :root{
-      --bg:#fff; --fg:#111; --muted:#666; --card:#f6f6f6; --maxw:720px;
-      --btn:#111; --btnfg:#fff;
-    }
-    @media (prefers-color-scheme: dark){
-      :root{ --bg:#0b0b0c; --fg:#f2f2f2; --muted:#a9a9a9; --card:#141416; --btn:#f2f2f2; --btnfg:#0b0b0c; }
-    }
-    *{ box-sizing:border-box; }
-    body{
-      margin:0; background:var(--bg); color:var(--fg);
-      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
-      line-height:1.85; letter-spacing:0.2px;
-    }
-    .wrap{ max-width:var(--maxw); margin:0 auto; padding:24px 18px 64px; }
+      /* Layout */
+      --maxw: 760px;
+      --radius: 18px;
 
-    /* 信紙卡片（紙張感） */
+      /* Base colors */
+      --bg: #fff7f2;
+      --fg: #141416;
+      --muted: #6a6a73;
+
+      /* Glass card */
+      --card: rgba(255,255,255,.72);
+      --cardSolid: rgba(255,255,255,.92);
+      --stroke: rgba(20,20,22,.10);
+
+      /* Paper */
+      --paper: rgba(255,250,242,.96);
+      --paperInk: rgba(20,20,22,.95);
+      --paperLine: rgba(20,20,22,.045);
+
+      /* Accents (theme defaults: rose) - tuned for white text contrast */
+      --accent: #d60061;
+      --accent2: #b85a00;
+      --accentOutline: rgba(214, 0, 97, .55);
+      --accentGlow: rgba(214, 0, 97, .18);
+
+      /* Background glow (theme defaults: rose) */
+      --glow1: rgba(255, 70, 145, .22);
+      --glow2: rgba(255, 165, 85, .18);
+      --glow3: rgba(255, 255, 255, .26);
+
+      /* Shadows */
+      --shadow: 0 18px 50px rgba(0,0,0,.16);
+      --shadow2: 0 10px 28px rgba(0,0,0,.12);
+
+      /* Type */
+      --font-ui: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+      --font-letter: ui-serif, "Noto Serif TC", "Songti TC", "PMingLiU", serif;
+
+      /* Noise */
+      --noiseOpacity: .06;
+    }
+
+    @media (prefers-color-scheme: dark){
+      :root{
+        --bg:#0b0b0c;
+        --fg:#f2f2f2;
+        --muted:#a9a9a9;
+
+        --card: rgba(20,20,22,.74);
+        --cardSolid: rgba(20,20,22,.92);
+        --stroke: rgba(255,255,255,.10);
+
+        --paper: rgba(36,30,24,.92);
+        --paperInk: rgba(242,242,242,.96);
+        --paperLine: rgba(255,255,255,.060);
+
+        --shadow: 0 18px 60px rgba(0,0,0,.48);
+        --shadow2: 0 10px 30px rgba(0,0,0,.34);
+
+        --noiseOpacity: .10;
+
+        /* Background glow in dark: keep subtle */
+        --glow1: rgba(214, 0, 97, .16);
+        --glow2: rgba(184, 90, 0, .12);
+        --glow3: rgba(255, 255, 255, .06);
+      }
+    }
+
+    /* ===== Theme switch (rose/night/paper) ===== */
+    :root[data-theme="rose"]{ /* defaults already */ }
+
+    :root[data-theme="night"]{
+      --accent: #2c5cff;   /* white text contrast ~ 5.14 */
+      --accent2: #6d28d9;  /* white text contrast ~ 7+   */
+      --accentOutline: rgba(44, 92, 255, .55);
+      --accentGlow: rgba(44, 92, 255, .18);
+
+      --glow1: rgba(44, 92, 255, .22);
+      --glow2: rgba(109, 40, 217, .18);
+      --glow3: rgba(255, 255, 255, .22);
+    }
+
+    :root[data-theme="paper"]{
+      --accent: #9a3412;   /* burnt sienna */
+      --accent2: #a16207;  /* amber brown  */
+      --accentOutline: rgba(154, 52, 18, .55);
+      --accentGlow: rgba(154, 52, 18, .18);
+
+      --glow1: rgba(154, 52, 18, .20);
+      --glow2: rgba(161, 98, 7, .16);
+      --glow3: rgba(255, 255, 255, .20);
+    }
+
+    /* ===== Base ===== */
+    *{ box-sizing:border-box; }
+    html{ color-scheme: light dark; }
+    body{
+      margin:0;
+      min-height: 100vh;
+      min-height: 100dvh;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--font-ui);
+      line-height: 1.85;
+      letter-spacing: 0.2px;
+    }
+
+    /* Background: soft glow + subtle grain */
+    body::before{
+      content:"";
+      position: fixed;
+      inset: 0;
+      pointer-events:none;
+      background:
+        radial-gradient(1200px 600px at 16% 12%, var(--glow1), transparent 62%),
+        radial-gradient(1000px 520px at 86% 92%, var(--glow2), transparent 62%),
+        radial-gradient(900px 420px at 50% 52%, var(--glow3), transparent 62%);
+      opacity: .95;
+    }
+    body::after{
+      content:"";
+      position: fixed;
+      inset: 0;
+      pointer-events:none;
+      background-image: radial-gradient(circle at 1px 1px, rgba(0,0,0,.22) 1px, transparent 0);
+      background-size: 22px 22px;
+      opacity: var(--noiseOpacity);
+      mix-blend-mode: soft-light;
+    }
+
+    .wrap{
+      max-width: var(--maxw);
+      margin: 0 auto;
+      padding: 26px 18px calc(72px + env(safe-area-inset-bottom));
+    }
+
+    header{ margin: 10px 0 18px; }
+    .title{
+      font-size: clamp(24px, 5.2vw, 34px);
+      font-weight: 820;
+      letter-spacing: -0.4px;
+      margin: 0 0 6px;
+    }
+    .meta{
+      color: var(--muted);
+      font-size: 14px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    /* Chip button */
+    .chip{
+      appearance: none;
+      border: 1px solid var(--stroke);
+      background: var(--cardSolid);
+      color: var(--fg);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-weight: 760;
+      cursor: pointer;
+      box-shadow: 0 6px 16px rgba(0,0,0,.08);
+      transition: transform .16s ease, filter .16s ease;
+    }
+    .chip:hover{ filter: brightness(1.02); }
+    .chip:active{ transform: translateY(1px) scale(.99); }
+    .chip:focus-visible{
+      outline: 3px solid var(--accentOutline);
+      outline-offset: 3px;
+    }
+
+    /* Glass card */
     .card{
       position: relative;
-      border-radius: 16px;
-      padding: 18px 16px;
+      border-radius: var(--radius);
+      padding: clamp(16px, 3.2vw, 22px);
+      background: var(--card);
+      border: 1px solid var(--stroke);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    @supports (backdrop-filter: blur(12px)){
+      .card{ backdrop-filter: blur(12px); }
+    }
+    .card::before{
+      content:"";
+      position:absolute;
+      inset:-2px;
       background:
-        radial-gradient(1200px 500px at 20% 0%, rgba(0,0,0,.04), transparent 60%),
-        radial-gradient(1200px 500px at 80% 100%, rgba(0,0,0,.03), transparent 60%),
-        linear-gradient(0deg, rgba(0,0,0,.03), rgba(0,0,0,.03)),
-        repeating-linear-gradient(
-          0deg,
-          rgba(0,0,0,.018) 0px,
-          rgba(0,0,0,.018) 1px,
-          transparent 1px,
-          transparent 6px
-        );
-      box-shadow: 0 10px 30px rgba(0,0,0,.10);
-      border: 1px solid rgba(127,127,127,.18);
+        radial-gradient(900px 300px at 15% 0%, rgba(255,255,255,.22), transparent 60%),
+        radial-gradient(700px 260px at 85% 100%, rgba(255,255,255,.12), transparent 62%);
+      opacity: .9;
+      pointer-events:none;
     }
+    .card > *{ position: relative; z-index: 1; }
 
-    header{ margin: 8px 0 18px; }
-    .title{ font-size: clamp(22px, 5vw, 30px); font-weight:750; margin:0 0 6px; }
-    .meta{ color:var(--muted); font-size:14px; display:flex; gap:10px; flex-wrap:wrap; }
-
-    .btn{
-      appearance:none; border:0; border-radius:999px;
-      padding:12px 16px; font-weight:750; cursor:pointer;
-      background:var(--btn); color:var(--btnfg);
-    }
-    .btn:active{ transform: translateY(1px); }
     .center{ text-align:center; }
-    .sp{ height:14px; }
-
-    .salute{ font-size:18px; margin:0 0 10px; font-weight:650; }
-
-    /* 段落樣式（段落空白 + 首行縮排） */
-    .letter{
-      font-size: 18px;
-      margin: 0;
-      word-break: break-word;
-    }
-    .letter p{
-      margin: 0 0 14px;
-      text-indent: 2em;
-    }
-    .letter p:last-child{ margin-bottom: 0; }
-
-    .sig{
-      margin-top:18px;
-      display:flex;
-      justify-content:flex-end;
-      font-size:17px;
-      font-weight:650;
-    }
-    .hint{ margin-top:14px; color:var(--muted); font-size:13px; text-align:center; }
-
-    /* 右下角小彩蛋按鈕 */
-    .egg{
-      position: fixed; right: 16px; bottom: 16px;
-      width: 44px; height: 44px; border-radius: 999px;
-      border: 0; cursor: pointer;
-      background: var(--card); color: var(--fg);
-      font-size: 20px; font-weight: 800;
-      box-shadow: 0 6px 20px rgba(0,0,0,.12);
-    }
-    .toast{
-      position: fixed; left: 50%; bottom: 76px; transform: translateX(-50%);
-      max-width: min(var(--maxw), calc(100vw - 32px));
-      background: var(--card); color: var(--fg);
-      padding: 12px 14px; border-radius: 12px;
-      box-shadow: 0 10px 30px rgba(0,0,0,.18);
-      font-size: 16px;
-      opacity:0; pointer-events:none;
-      transition: opacity .2s ease;
-      white-space: pre-wrap;
-    }
-    .toast.show{ opacity:1; }
-
-    /* 音樂控制 */
-    .audioBar{
-      display:flex; gap:10px; align-items:center; justify-content:center;
-      margin-top: 10px;
-    }
-    .small{ font-size:13px; color: var(--muted); }
-
-    /* 隱藏 */
+    .sp{ height: 14px; }
+    .small{ font-size: 13px; color: var(--muted); }
     .hidden{ display:none !important; }
 
-    /* ====== 信件卡片加：半透明背景照片 ====== */
-    #letterCard{
-      position: relative;
-      overflow: hidden; /* 讓背景不超出圓角 */
+    /* Wax-seal button */
+    .btn{
+      appearance:none;
+      border:0;
+      border-radius:999px;
+      padding: 12px 16px;
+      font-weight: 840;
+      cursor:pointer;
+      color:#fff;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      box-shadow: var(--shadow2);
+      transition: transform .16s ease, filter .16s ease;
     }
+    .btn:hover{ filter: saturate(1.05) brightness(1.02); }
+    .btn:active{ transform: translateY(1px) scale(.99); }
+    .btn:focus-visible{
+      outline: 3px solid var(--accentOutline);
+      outline-offset: 3px;
+    }
+
+    /* Password input */
+    #pw{
+      width:min(380px, 100%);
+      padding:12px 14px;
+      border-radius:14px;
+      border:1px solid rgba(127,127,127,.28);
+      background: var(--cardSolid);
+      color:var(--fg);
+      font-size:16px;
+      transition: box-shadow .16s ease, border-color .16s ease;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.18);
+    }
+    #pw:focus{
+      outline:none;
+      border-color: var(--accentOutline);
+      box-shadow: 0 0 0 4px var(--accentGlow);
+    }
+
+    /* ===== Enter animation (0.4–0.6s) ===== */
+    @keyframes riseIn{
+      from{ opacity:0; transform: translateY(10px) scale(.99); }
+      to{ opacity:1; transform: translateY(0) scale(1); }
+    }
+    .card.enter{ animation: riseIn .55s cubic-bezier(.2,.9,.2,1) both; }
+
+    /* ===== Letter paper ===== */
+    #letterCard{
+      background: var(--paper);
+      border-color: rgba(127,127,127,.18);
+    }
+    /* photo overlay */
     #letterCard::before{
       content:"";
       position:absolute;
@@ -122,17 +282,131 @@
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
-      opacity: 0.18;          /* ✅ 透明度：0~1，越小越淡 */
-      filter: blur(1px);      /* 可選：讓背景柔一點 */
-      transform: scale(1.06); /* 防 blur 邊緣露出 */
+      opacity: 0.16;
+      filter: blur(1.2px) saturate(1.05);
+      transform: scale(1.06);
       z-index: 0;
+      pointer-events:none;
     }
-    #letterCard > *{
-      position: relative;
-      z-index: 1; /* 內容在背景上面 */
+    /* paper lines + gentle vignettes */
+    #letterCard::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        repeating-linear-gradient(
+          0deg,
+          var(--paperLine) 0px,
+          var(--paperLine) 1px,
+          transparent 1px,
+          transparent 7px
+        ),
+        radial-gradient(1200px 500px at 20% 0%, rgba(0,0,0,.035), transparent 62%),
+        radial-gradient(1200px 500px at 80% 100%, rgba(0,0,0,.03), transparent 62%);
+      opacity: .95;
+      z-index: 0;
+      pointer-events:none;
+    }
+    #letterCard > *{ position: relative; z-index: 1; }
+
+    .salute{
+      font-family: var(--font-letter);
+      font-size: 19px;
+      margin:0 0 10px;
+      font-weight: 790;
+      color: var(--paperInk);
+    }
+    .letter{
+      font-family: var(--font-letter);
+      font-size: 18px;
+      margin: 0;
+      color: var(--paperInk);
+      word-break: break-word;
+    }
+    .letter p{ margin: 0 0 14px; text-indent: 2em; }
+    .letter p:last-child{ margin-bottom: 0; }
+
+    .sig{
+      margin-top: 18px;
+      display: flex;
+      justify-content: flex-end;
+      font-size: 18px;
+      font-weight: 840;
+      font-family: var(--font-letter);
+      color: var(--paperInk);
     }
 
-        /* ===== 信封圖示按鈕 ===== */
+    .hint{ margin-top: 14px; color: var(--muted); font-size: 13px; text-align:center; }
+
+    /* ===== Toast / egg (safe area aware) ===== */
+    .egg{
+      position: fixed;
+      right: calc(16px + env(safe-area-inset-right));
+      bottom: calc(16px + env(safe-area-inset-bottom));
+      width: 46px; height: 46px;
+      border-radius: 999px;
+      border: 1px solid var(--stroke);
+      background: var(--cardSolid);
+      color: var(--fg);
+      font-size: 20px;
+      font-weight: 900;
+      box-shadow: var(--shadow2);
+      cursor: pointer;
+      transition: transform .16s ease, filter .16s ease;
+      z-index: 10;
+    }
+    .egg:hover{ filter: brightness(1.02); }
+    .egg:active{ transform: translateY(1px) scale(.99); }
+    .egg:focus-visible{
+      outline: 3px solid var(--accentOutline);
+      outline-offset: 3px;
+    }
+
+    .toast{
+      position: fixed;
+      left: 50%;
+      bottom: calc(82px + env(safe-area-inset-bottom));
+      transform: translateX(-50%);
+      max-width: min(var(--maxw), calc(100vw - 32px));
+      background: var(--cardSolid);
+      color: var(--fg);
+      padding: 12px 14px;
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      font-size: 16px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s ease, transform .2s ease;
+      white-space: pre-wrap;
+      z-index: 10;
+    }
+    .toast.show{ opacity: 1; transform: translateX(-50%) translateY(-2px); }
+
+    /* ===== Cover card extra glow when opened ===== */
+    #coverCard{
+      position: relative;
+      overflow: hidden;
+    }
+    #coverCard::after{
+      content:"";
+      position:absolute;
+      inset:-40px;
+      background: radial-gradient(circle at 50% 40%,
+        rgba(255, 255, 255, .18),
+        var(--accentGlow),
+        transparent 65%);
+      opacity: 0;
+      transform: scale(0.96);
+      transition: opacity .35s ease, transform .35s ease;
+      pointer-events: none;
+      z-index: 0;
+    }
+    #coverCard.opened::after{
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    /* ===== Envelope button ===== */
     .envelopeBtn{
       width: 100%;
       border: 0;
@@ -142,6 +416,12 @@
       place-items: center;
       padding: 6px 0 2px;
       -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    .envelopeBtn:focus-visible{
+      outline: 3px solid var(--accentOutline);
+      outline-offset: 6px;
+      border-radius: 16px;
     }
 
     .envelopeHint{
@@ -150,219 +430,193 @@
       color: var(--muted);
     }
 
-    .envelope{
-      width: min(220px, 70vw);
-      height: auto;
-      filter: drop-shadow(0 14px 22px rgba(0,0,0,.16));
-      transform: translateY(0) scale(1);
-      transition: transform .18s ease;
+    .envelopeWrap{
+      position: relative;
+      display: grid;
+      place-items: center;
+      padding: 8px 0 0;
     }
 
-/* ===== 信封圖示按鈕（進階動畫版） ===== */
-.envelopeBtn{
-  width: 100%;
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-  display: grid;
-  place-items: center;
-  padding: 6px 0 2px;
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
-}
+    .envelopeGlow{
+      position: absolute;
+      width: min(260px, 86vw);
+      height: 90px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 50% 50%,
+        rgba(255, 255, 255, .10),
+        var(--accentGlow),
+        transparent 70%);
+      filter: blur(10px);
+      opacity: .9;
+      transform: translateY(52px);
+      animation: glowPulse 2.2s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes glowPulse{
+      0%,100%{ opacity:.75; transform: translateY(52px) scale(1); }
+      50%{ opacity:1; transform: translateY(52px) scale(1.05); }
+    }
 
-.envelopeHint{
-  margin-top: 10px;
-  font-size: 13px;
-  color: var(--muted);
-}
+    .envelope{
+      width: min(250px, 82vw);
+      height: auto;
+      filter:
+        drop-shadow(0 18px 30px rgba(0,0,0,.18))
+        drop-shadow(0 6px 10px rgba(0,0,0,.10));
+      transform: translateY(0) scale(1);
+      transition: transform .22s ease, filter .22s ease;
+      animation: floaty 2.6s ease-in-out infinite;
+      transform-origin: 50% 70%;
+    }
+    @keyframes floaty{
+      0%,100%{ transform: translateY(0) rotate(-.4deg); }
+      50%{ transform: translateY(-6px) rotate(.4deg); }
+    }
+    .envelopeBtn:hover .envelope{ transform: translateY(-1px) scale(1.01); }
+    .envelopeBtn:active .envelope{
+      animation: none;
+      transform: translateY(2px) scale(0.98);
+      filter:
+        drop-shadow(0 10px 18px rgba(0,0,0,.18))
+        drop-shadow(0 4px 8px rgba(0,0,0,.10));
+    }
 
-/* 信封浮動 + 光暈 */
-.envelopeWrap{
-  position: relative;
-  display: grid;
-  place-items: center;
-  padding: 8px 0 0;
-}
+    /* Envelope SVG styling */
+    .env-body{
+      fill: url(#envBodyGrad);
+      stroke: rgba(255, 120, 150, .55);
+      stroke-width: 2;
+    }
+    .env-letter{
+      fill: #fff8f2;
+      stroke: rgba(255, 170, 120, .35);
+      stroke-width: 2;
+    }
+    .env-line{
+      stroke: rgba(255, 145, 170, .55);
+      stroke-width: 3;
+      stroke-linecap: round;
+    }
+    .env-fold{
+      fill: none;
+      stroke: rgba(255, 170, 120, .45);
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .env-flap{
+      fill: url(#envFlapGrad);
+      stroke: rgba(255, 120, 150, .55);
+      stroke-width: 2;
+      transform-origin: 100px 52px;
+      transition: transform .42s cubic-bezier(.2,.9,.2,1);
+    }
+    .env-paper{
+      transform-origin: 100px 90px;
+      transform: translateY(0);
+      transition: transform .42s cubic-bezier(.2,.9,.2,1);
+    }
+    .env-heart{
+      fill: rgba(255, 60, 110, 0);
+      opacity: 0;
+      transform: translateY(0) scale(1);
+      transform-origin: 100px 80px;
+      transition: transform .42s cubic-bezier(.2,.9,.2,1),
+                  fill .42s ease,
+                  opacity .42s ease,
+                  filter .42s ease;
+      filter: drop-shadow(0 0 0 rgba(255,60,110,0));
+    }
 
-.envelopeGlow{
-  position: absolute;
-  width: min(260px, 86vw);
-  height: 90px;
-  border-radius: 999px;
-  background: radial-gradient(circle at 50% 50%,
-    rgba(255, 106, 162, .24),
-    rgba(255, 179, 107, .10),
-    transparent 70%);
-  filter: blur(10px);
-  opacity: .9;
-  transform: translateY(52px);
-  animation: glowPulse 2.2s ease-in-out infinite;
-  pointer-events: none;
-}
+    /* Open animation */
+    #coverCard.opened .env-flap{ transform: rotateX(170deg); }
+    #coverCard.opened .env-paper{ transform: translateY(-12px); }
+    #coverCard.opened .env-heart{
+      fill: rgba(255, 60, 110, .95);
+      opacity: 1;
+      transform: translateY(-14px) scale(1.05);
+      filter: drop-shadow(0 8px 14px rgba(255, 60, 110, .35));
+      animation: heartPop .6s ease-out 1;
+    }
+    @keyframes heartPop{
+      0%{ transform: translateY(-10px) scale(.95); }
+      60%{ transform: translateY(-18px) scale(1.12); }
+      100%{ transform: translateY(-14px) scale(1.05); }
+    }
 
-@keyframes glowPulse{
-  0%,100%{ opacity:.75; transform: translateY(52px) scale(1); }
-  50%{ opacity:1; transform: translateY(52px) scale(1.05); }
-}
+    /* ===== Audio bar ===== */
+    .audioBar{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:center;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
 
-.envelope{
-  width: min(250px, 82vw);
-  height: auto;
-  filter:
-    drop-shadow(0 18px 30px rgba(0,0,0,.18))
-    drop-shadow(0 6px 10px rgba(0,0,0,.10));
-  transform: translateY(0) scale(1);
-  transition: transform .22s ease, filter .22s ease;
-  animation: floaty 2.6s ease-in-out infinite;
-  transform-origin: 50% 70%;
-}
+    /* ===== Reduced motion ===== */
+    @media (prefers-reduced-motion: reduce){
+      .envelope, .envelopeGlow{ animation: none !important; }
+      .btn, .chip, .egg, .toast{ transition: none !important; }
+      .card.enter{ animation: none !important; }
+      #coverCard.opened .env-heart{ animation: none !important; }
+    }
 
-@keyframes floaty{
-  0%,100%{ transform: translateY(0) rotate(-.4deg); }
-  50%{ transform: translateY(-6px) rotate(.4deg); }
-}
-
-.envelopeBtn:hover .envelope{
-  transform: translateY(-1px) scale(1.01);
-}
-.envelopeBtn:active .envelope{
-  animation: none;
-  transform: translateY(2px) scale(0.98);
-  filter:
-    drop-shadow(0 10px 18px rgba(0,0,0,.18))
-    drop-shadow(0 4px 8px rgba(0,0,0,.10));
-}
-
-/* 背景微閃（打開那瞬間） */
-#coverCard{
-  position: relative;
-  overflow: hidden;
-}
-#coverCard::after{
-  content:"";
-  position:absolute;
-  inset:-40px;
-  background: radial-gradient(circle at 50% 40%,
-    rgba(255, 106, 162, .18),
-    rgba(255, 179, 107, .10),
-    transparent 65%);
-  opacity: 0;
-  transform: scale(0.96);
-  transition: opacity .35s ease, transform .35s ease;
-  pointer-events: none;
-}
-#coverCard.opened::after{
-  opacity: 1;
-  transform: scale(1);
-}
-
-/* ===== 配色（鮮艷漸層） ===== */
-.env-body{
-  fill: url(#envBodyGrad);
-  stroke: rgba(255, 120, 150, .55);
-  stroke-width: 2;
-}
-.env-letter{
-  fill: #fff8f2;
-  stroke: rgba(255, 170, 120, .35);
-  stroke-width: 2;
-}
-.env-line{
-  stroke: rgba(255, 145, 170, .55);
-  stroke-width: 3;
-  stroke-linecap: round;
-}
-.env-fold{
-  fill: none;
-  stroke: rgba(255, 170, 120, .45);
-  stroke-width: 3;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-.env-flap{
-  fill: url(#envFlapGrad);
-  stroke: rgba(255, 120, 150, .55);
-  stroke-width: 2;
-  transform-origin: 100px 52px;
-  transition: transform .42s cubic-bezier(.2,.9,.2,1);
-}
-
-/* 信紙上滑（新增 env-paper 物件） */
-.env-paper{
-  transform-origin: 100px 90px;
-  transform: translateY(0);
-  transition: transform .42s cubic-bezier(.2,.9,.2,1);
-}
-
-/* 愛心跳動 + 發光 */
-.env-heart{
-  fill: rgba(255, 60, 110, 0);
-  opacity: 0;
-  transform: translateY(0) scale(1);
-  transform-origin: 100px 80px;
-  transition: transform .42s cubic-bezier(.2,.9,.2,1), fill .42s ease, opacity .42s ease, filter .42s ease;
-  filter: drop-shadow(0 0 0 rgba(255,60,110,0));
-}
-
-/* 打開動畫觸發 */
-#coverCard.opened .env-flap{
-  transform: rotateX(170deg);
-}
-#coverCard.opened .env-paper{
-  transform: translateY(-12px);
-}
-#coverCard.opened .env-heart{
-  fill: rgba(255, 60, 110, .95);
-  opacity: 1;
-  transform: translateY(-14px) scale(1.05);
-  filter: drop-shadow(0 8px 14px rgba(255, 60, 110, .35));
-  animation: heartPop .6s ease-out 1;
-}
-@keyframes heartPop{
-  0%{ transform: translateY(-10px) scale(.95); }
-  60%{ transform: translateY(-18px) scale(1.12); }
-  100%{ transform: translateY(-14px) scale(1.05); }
-}
+    /* ===== Print ===== */
+    @media print{
+      body{ background:#fff !important; }
+      body::before, body::after,
+      #lockCard, #coverCard, .egg, .toast, .hint, #themeBtn{
+        display:none !important;
+      }
+      .wrap{ padding: 0 !important; max-width: none !important; }
+      .card{ box-shadow:none !important; backdrop-filter: none !important; }
+      /* Force letter visible for printing */
+      #letterCard, #letterCard.hidden{ display:block !important; }
+      #letterCard::before{ display:none !important; }
+      #letterCard::after{ opacity: .55; }
+    }
   </style>
 </head>
+
 <body>
   <main class="wrap">
     <header>
-      <h1 class="title">給妳的一封信</h1>
+      <h1 class="title">To 戴小乓：</h1>
       <div class="meta">
         <span id="date"></span>
         <span>—</span>
         <span id="toWhom">寫給：琬庭</span>
+        <button class="chip" id="themeBtn" type="button" aria-label="切換主題">主題：玫瑰</button>
       </div>
     </header>
 
     <!-- 密碼解鎖區（簡易保護） -->
-    <section class="card" id="lockCard">
+    <section class="card enter" id="lockCard" aria-label="密碼解鎖">
       <div class="center">
-        <div style="font-size:18px; font-weight:750;">只給妳看的</div>
+        <div style="font-size:18px; font-weight:840;">只給妳看的</div>
         <div class="sp"></div>
         <div class="small">請輸入我們的密碼</div>
         <div class="sp"></div>
         <input id="pw" type="password" inputmode="text" autocomplete="off"
-               placeholder="輸入密碼"
-               style="width:min(360px, 100%); padding:12px 14px; border-radius:12px; border:1px solid rgba(127,127,127,.35); background:transparent; color:var(--fg); font-size:16px;">
+               placeholder="輸入密碼" />
         <div class="sp"></div>
-        <button class="btn" id="unlockBtn">解鎖</button>
+        <button class="btn" id="unlockBtn" type="button">解鎖</button>
         <div class="sp"></div>
-        <div id="lockMsg" class="small"></div>
+        <div id="lockMsg" class="small" aria-live="polite"></div>
       </div>
     </section>
 
     <!-- 開場「拆信封」 -->
-    <section class="card hidden" id="coverCard">
+    <section class="card hidden" id="coverCard" aria-label="拆信封">
       <div class="center">
-        <div style="font-size:18px; font-weight:750;">我把想說的話都寫在這裡了。</div>
+        <div style="font-size:18px; font-weight:840;">我把想說的話都寫在這裡了。</div>
         <div class="sp"></div>
-        <button class="envelopeBtn" id="openBtn" aria-label="打開信封" title="打開信封">
-          <div class="envelopeWrap">
+
+        <button class="envelopeBtn" id="openBtn" type="button" aria-label="打開信封" title="打開信封">
+          <div class="envelopeWrap" aria-hidden="true">
             <div class="envelopeGlow"></div>
-        
+
             <svg class="envelope" viewBox="0 0 200 140" role="img" aria-hidden="true">
               <defs>
                 <linearGradient id="envBodyGrad" x1="0" y1="0" x2="1" y2="1">
@@ -375,7 +629,7 @@
                   <stop offset="100%" stop-color="#ffb36b"/>
                 </linearGradient>
               </defs>
-        
+
               <!-- 信紙（會上滑） -->
               <g class="env-paper">
                 <rect class="env-letter" x="36" y="20" width="128" height="86" rx="10"></rect>
@@ -383,16 +637,16 @@
                 <line class="env-line" x1="52" y1="58" x2="140" y2="58"></line>
                 <line class="env-line" x1="52" y1="72" x2="132" y2="72"></line>
               </g>
-        
+
               <!-- 信封本體 -->
               <rect class="env-body" x="18" y="36" width="164" height="92" rx="14"></rect>
-        
+
               <!-- 信封折線 -->
               <path class="env-fold" d="M26 52 L100 96 L174 52"></path>
-        
+
               <!-- 信封蓋（會翻開） -->
               <path class="env-flap" d="M26 52 L100 18 L174 52 L100 90 Z"></path>
-        
+
               <!-- 小愛心 -->
               <path class="env-heart" d="M100 58
                 C100 52 94 48 88 48
@@ -403,15 +657,9 @@
                 C106 48 100 52 100 58 Z"></path>
             </svg>
           </div>
-        
+
           <div class="envelopeHint">點信封打開</div>
         </button>
-
-        <div class="audioBar">
-          <button class="btn" id="musicBtn" style="padding:10px 14px;">播放音樂</button>
-          <span class="small" id="musicState">（可選）</span>
-        </div>
-        <div class="small">手機不會自動播放，需手動按一次播放。</div>
       </div>
     </section>
 
@@ -428,7 +676,7 @@
 
         <p>回想我們剛開始交往，從論文八字還沒有一撇、焦慮的找工作、被塞了這樣莫名其妙的工作內容、學習、上手、負責這項工作、獲得老闆的賞識也拿到了獎金。這過程中若沒有你陪著，事情是不可能這麼順利的。</p>
 
-        <p>這包紅包，是去年的我心裡就早就決定好，應該要給妳的。很謝謝你陪著我寫論文、教我好多東西、去年的 2/11 陪著我過、扮演每一個我重要大事的商量對象。</p>
+        <p>謝謝你陪著我寫論文、教我好多東西、去年的 2/11 陪著我過、扮演每一個我重要大事的商量對象。</p>
 
         <p>你真的是我生命中很重要的存在，我也會努力讓你也有相同感受的！</p>
 
@@ -444,12 +692,14 @@
   </main>
 
   <!-- 小彩蛋 -->
-  <button class="egg hidden" id="eggBtn" aria-label="小彩蛋">☆</button>
-  <div class="toast" id="toast"></div>
+  <button class="egg hidden" id="eggBtn" type="button" aria-label="小彩蛋">☆</button>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <!-- 音樂（之後把 src 換成你的檔案） -->
+  <!-- 音樂（把 src 換成你的檔案） -->
   <audio id="bgm" preload="none">
     <!-- 例：<source src="music.mp3" type="audio/mpeg"> -->
+    <!-- 建議：把 music.mp3 放在同資料夾後，解除註解： -->
+    <!-- <source src="music.mp3" type="audio/mpeg"> -->
   </audio>
 
   <script>
@@ -468,15 +718,73 @@
       ENABLE_MUSIC: true,
     };
 
+    /*
+      安全限制（請務必知道）：
+      這個專案的 PASSWORD 是前端常數，任何人「檢視原始碼」就能看到，
+      所以它屬於「避免不小心被看到」的儀式門檻，而非真正的安全機制。
+    */
+
+    // ===== 小工具：進場動畫 =====
+    function enterCard(el){
+      if(!el) return;
+      el.classList.remove('enter');
+      // 觸發 reflow 讓 animation 重新播放
+      void el.offsetWidth;
+      el.classList.add('enter');
+    }
+
     // ===== 初始化日期 =====
-    const d = new Date();
-    const fmt = new Intl.DateTimeFormat('zh-TW', { year:'numeric', month:'long', day:'numeric' });
-    document.getElementById('date').textContent = fmt.format(d);
+    (function initDate(){
+      const d = new Date();
+      const fmt = new Intl.DateTimeFormat('zh-TW', { year:'numeric', month:'long', day:'numeric' });
+      const el = document.getElementById('date');
+      if(el) el.textContent = fmt.format(d);
+    })();
 
     // ===== 套用文字 =====
-    document.getElementById('toWhom').textContent = `寫給：${SETTINGS.TO_NAME}`;
-    document.getElementById('salute').textContent = SETTINGS.SALUTE;
-    document.getElementById('sign').textContent = SETTINGS.SIGN;
+    (function applyText(){
+      const toWhom = document.getElementById('toWhom');
+      const salute = document.getElementById('salute');
+      const sign = document.getElementById('sign');
+      if(toWhom) toWhom.textContent = `寫給：${SETTINGS.TO_NAME}`;
+      if(salute) salute.textContent = SETTINGS.SALUTE;
+      if(sign) sign.textContent = SETTINGS.SIGN;
+    })();
+
+    // ===== 主題切換（rose/night/paper）+ localStorage =====
+    (function themeInit(){
+      const THEMES = [
+        { key: "rose",  label: "玫瑰" },
+        { key: "night", label: "夜色" },
+        { key: "paper", label: "牛皮紙" },
+      ];
+      const STORAGE_KEY = "letterTheme";
+      const btn = document.getElementById('themeBtn');
+      if(!btn) return;
+
+      function setTheme(key){
+        document.documentElement.dataset.theme = key;
+        const t = THEMES.find(x => x.key === key) || THEMES[0];
+        btn.textContent = `主題：${t.label}`;
+
+        // best-effort persist
+        try{ localStorage.setItem(STORAGE_KEY, key); }catch(e){}
+      }
+
+      // load
+      let saved = null;
+      try{ saved = localStorage.getItem(STORAGE_KEY); }catch(e){}
+      if(!saved) saved = "rose";
+      setTheme(saved);
+
+      // cycle
+      btn.addEventListener('click', () => {
+        const cur = document.documentElement.dataset.theme || "rose";
+        const idx = THEMES.findIndex(x => x.key === cur);
+        const next = THEMES[(idx + 1 + THEMES.length) % THEMES.length].key;
+        setTheme(next);
+      });
+    })();
 
     // ===== 解鎖 =====
     const lockCard = document.getElementById('lockCard');
@@ -489,8 +797,10 @@
       if(val === SETTINGS.PASSWORD){
         lockCard.classList.add('hidden');
         coverCard.classList.remove('hidden');
+        enterCard(coverCard);
+        if(lockMsg) lockMsg.textContent = "";
       }else{
-        lockMsg.textContent = "密碼不對喔（再試一次）";
+        if(lockMsg) lockMsg.textContent = "密碼不對喔（再試一次）";
       }
     });
 
@@ -501,54 +811,36 @@
 
     // ===== 打開信封 =====
     document.getElementById('openBtn').addEventListener('click', () => {
-    coverCard.classList.add('opened'); // 先播放信封打開動畫
+      coverCard.classList.add('opened'); // 先播放信封打開動畫
 
-    setTimeout(() => {
-      coverCard.classList.add('hidden');
-      letterCard.classList.remove('hidden');
-      if(SETTINGS.ENABLE_EGG) document.getElementById('eggBtn').classList.remove('hidden');
+      setTimeout(() => {
+        coverCard.classList.add('hidden');
+        letterCard.classList.remove('hidden');
+        enterCard(letterCard);
+        if(SETTINGS.ENABLE_EGG) document.getElementById('eggBtn').classList.remove('hidden');
       }, 280);
     });
 
     // ===== 小彩蛋 =====
     const eggBtn = document.getElementById('eggBtn');
     const toast = document.getElementById('toast');
+
     function showToast(msg){
       toast.textContent = msg;
       toast.classList.add('show');
       clearTimeout(showToast._t);
       showToast._t = setTimeout(()=>toast.classList.remove('show'), 1800);
     }
+
     eggBtn.addEventListener('click', ()=>{
       const q = SETTINGS.EGG_QUOTES[Math.floor(Math.random()*SETTINGS.EGG_QUOTES.length)];
       showToast(q);
     });
     if(!SETTINGS.ENABLE_EGG) eggBtn.classList.add('hidden');
 
-    // ===== 背景音樂 =====
-    const bgm = document.getElementById('bgm');
-    const musicBtn = document.getElementById('musicBtn');
-    const musicState = document.getElementById('musicState');
-    if(!SETTINGS.ENABLE_MUSIC){
-      musicBtn.classList.add('hidden');
-      musicState.textContent = "";
-    }else{
-      musicBtn.addEventListener('click', async ()=>{
-        try{
-          if(bgm.paused){
-            await bgm.play();
-            musicBtn.textContent = "暫停音樂";
-            musicState.textContent = "播放中";
-          }else{
-            bgm.pause();
-            musicBtn.textContent = "播放音樂";
-            musicState.textContent = "已暫停";
-          }
-        }catch(err){
-          musicState.textContent = "（尚未放入音樂檔或瀏覽器限制）";
-        }
-      });
-    }
+
+
+
   </script>
 </body>
 </html>
